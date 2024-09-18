@@ -27,11 +27,9 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage5),
 ]
 
-SERVER_HOST = '127.0.0.1'
-SERVER_PORT = 5038
 DATA_FILE = "data.json"
-# DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
-# DEFAULT_RESEARCHER = list_researcher(range(1_000_000))
+DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
+# DEFAULT_RESEARCHER = list_researcher([1, 2, 3, 4, 5])
 # DEFAULT_RESEARCHER = plot_researcher(list(range(100)))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)

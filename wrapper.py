@@ -13,7 +13,7 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage1),
 ]
 
-def main():
+def run():
     proc = subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     stdin = proc.stdin
     stdout = proc.stdout
@@ -35,6 +35,25 @@ def main():
             line = stdout.readline().strip().decode()
             if line != f">>> stage{stage} Concurred!":
                 print(f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {stdout.readline().strip()}")
+        else:
+            print(f"stage {stage}. prompt: h(?) = {wanted_output}")
+            guess = input("> ")
+            stdin.write((str(guess) + '\n').encode())
+            stdin.flush()
+            line = stdout.readline().strip().decode()
+            if line == f">>> stage{stage} Concurred!":
+                print("success!")
+            elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
+                line = stdout.readline().strip().decode()
+                print(line)
+                break
+            else:
+                print(f"unknown line encountered: {line}")
+
+
+def main():
+    while True:
+        run()
 
 if __name__ == '__main__':
     main()

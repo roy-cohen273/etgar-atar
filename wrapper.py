@@ -4,10 +4,9 @@ import sys
 import re
 import subprocess
 import json
-from typing import Callable
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
-from guessers import input_guesser, list_guesser
+from researcher import Researcher, aggregate_list_researcher, input_researcher, list_researcher
 from stage0 import stage0
 from stage1 import stage1
 from stage2 import stage2
@@ -21,9 +20,10 @@ solved_levels: list[SolvedLevel] = [
 ]
 
 DATA_FILE = "data.json"
-DEFAULT_GUESSER = input_guesser
+DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
+# DEFAULT_RESEARCHER = list_researcher([1, 2, 3, 4, 5])
 
-def run(guesser: Callable[[int, str], int]) -> tuple[int, int, str]:
+def run(guess: int) -> tuple[int, int, int]:
     proc = subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     stdin = proc.stdin
     stdout = proc.stdout
@@ -49,8 +49,7 @@ def run(guesser: Callable[[int, str], int]) -> tuple[int, int, str]:
                     f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {line}"
                 )
         else:
-            print(f"stage {stage}. prompt: h(?) = {wanted_output}")
-            guess = guesser(stage, wanted_output)
+            # print(f"stage {stage}. prompt: h(?) = {wanted_output}")
             stdin.write((str(guess) + "\n").encode())
             stdin.flush()
             line = stdout.readline().strip(b'\n').decode()
@@ -58,7 +57,7 @@ def run(guesser: Callable[[int, str], int]) -> tuple[int, int, str]:
                 print("success!")
             elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
                 line = stdout.readline().strip(b'\n').decode()
-                print(line)
+                # print(line)
                 m = re.match(r"^-> h\((\d+)\) = ((\d+)|(\w*))$", line)
                 if not m:
                     print(f"hint line does not match regex: {line}")
@@ -66,34 +65,24 @@ def run(guesser: Callable[[int, str], int]) -> tuple[int, int, str]:
             else:
                 print(f"unknown line encountered: {line}")
 
-
-def main():
-    stages = []
-    guesses = []
-    outputs = []
-    error = None
-    while True:
-        try:
-            stage, guess, output = run(DEFAULT_GUESSER)
-        except Exception as e:
-            error = e
-            raise
-            break
-
-        stages.append(stage)
-        guesses.append(guess)
-        outputs.append(output)
-
+def research(researcher: Researcher):
+    def h(guess: int) -> int:
+        stage, guess2, output = run(guess)
+        if guess != guess2:
+            print("WTF!?", file=sys.stderr)
         with open(DATA_FILE, 'r') as f:
             data = json.load(f)
         if str(stage) not in data:
             data[str(stage)] = {}
         data[str(stage)][str(guess)] = output
         with open(DATA_FILE, 'w') as f:
-            json.dump(data, f)
-    
-    print(f"ERROR: {error}")
-    print(list(zip(guesses, outputs)))
+            json.dump(data, f, indent=4)
+        return output
+
+    return researcher(h)
+
+def main():
+    print(research(DEFAULT_RESEARCHER))
 
 
 if __name__ == "__main__":

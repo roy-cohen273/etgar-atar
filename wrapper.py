@@ -36,9 +36,16 @@ def run(guess: int) -> tuple[int, int, int]:
 
         stdin = open(sock.fileno(), 'w')
         stdout = open(sock.fileno(), 'r')
-            
+
+        def get_line() -> str:
+            return stdout.readline().strip('\r\n')
+        
+        def send_guess(guess: int) -> None:
+            stdin.write(str(guess) + '\n')
+            stdin.flush()
+
         while True:
-            line = stdout.readline().strip('\n')
+            line = get_line()
             m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = ((\d+)|(\w*))$", line)
             if not m:
                 print(f"line does not match regex: {line}", file=sys.stderr)
@@ -49,23 +56,21 @@ def run(guess: int) -> tuple[int, int, int]:
             if 0 <= stage < len(solved_levels):
                 solution = solved_levels[stage].solve(wanted_output)
                 # print(str(solution), file=stdin)
-                stdin.write((str(solution) + "\n"))
-                stdin.flush()
-                line = stdout.readline().strip('\n')
+                send_guess(solution)
+                line = get_line()
                 if line != f">>> stage{stage} Concurred!":
-                    line = stdout.readline().strip('\n')
+                    line = get_line()
                     print(
                         f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {line}"
                     )
             else:
                 # print(f"stage {stage}. prompt: h(?) = {wanted_output}")
-                stdin.write((str(guess) + "\n"))
-                stdin.flush()
-                line = stdout.readline().strip('\n')
+                send_guess(guess)
+                line = get_line()
                 if line == f">>> stage{stage} Concurred!":
                     print("success!")
                 elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
-                    line = stdout.readline().strip('\n')
+                    line = get_line()
                     # print(line)
                     m = re.match(r"^-> h\((\d+)\) = ((\d+)|(\w*))$", line)
                     if not m:

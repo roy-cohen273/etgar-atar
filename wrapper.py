@@ -4,9 +4,11 @@ import subprocess
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
 from stage0 import stage0
+from stage1 import stage1
 
 solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage0),
+    SolvedInverse(stage1),
 ]
 
 def main():

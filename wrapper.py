@@ -3,8 +3,10 @@
 import sys
 import re
 import subprocess
+from typing import Callable
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
+from guessers import input_guesser, list_guesser
 from stage0 import stage0
 from stage1 import stage1
 
@@ -13,7 +15,9 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage1),
 ]
 
-def run():
+DEFAULT_GUESSER = list_guesser(pow(2, i) for i in range(64))
+
+def run(guesser: Callable[[int, int], int]):
     proc = subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     stdin = proc.stdin
     stdout = proc.stdout
@@ -37,7 +41,7 @@ def run():
                 print(f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {stdout.readline().strip()}")
         else:
             print(f"stage {stage}. prompt: h(?) = {wanted_output}")
-            guess = input("> ")
+            guess = guesser(stage, wanted_output)
             stdin.write((str(guess) + '\n').encode())
             stdin.flush()
             line = stdout.readline().strip().decode()
@@ -53,7 +57,7 @@ def run():
 
 def main():
     while True:
-        run()
+        run(DEFAULT_GUESSER)
 
 if __name__ == '__main__':
     main()

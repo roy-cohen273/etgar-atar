@@ -3,6 +3,7 @@
 import sys
 import re
 import subprocess
+import json
 from typing import Callable
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
@@ -15,6 +16,7 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage1),
 ]
 
+DATA_FILE = "data.json"
 DEFAULT_GUESSER = list_guesser(pow(2, i) for i in range(64))
 
 def run(guesser: Callable[[int, int], int]):
@@ -49,6 +51,17 @@ def run(guesser: Callable[[int, int], int]):
                 print("success!")
             elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
                 line = stdout.readline().strip().decode()
+                m = re.match(r"^-> h\((\d+)\) = (\d+)$", line)
+                if m:
+                    guess = int(m.group(1))
+                    output = int(m.group(2))
+                    with open(DATA_FILE, 'r') as f:
+                        data = json.load(f)
+                    if str(stage) not in data:
+                        data[str(stage)] = {}
+                    data[str(stage)][str(guess)] = output
+                    with open(DATA_FILE, 'w') as f:
+                        json.dump(data, f)
                 print(line)
                 break
             else:

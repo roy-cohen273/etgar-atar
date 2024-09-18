@@ -1,5 +1,7 @@
 from typing import TypeAlias, Callable, Any
 
+import matplotlib.pyplot as plt
+
 Researcher: TypeAlias = Callable[[Callable[[int], int]], Any]
 
 def list_researcher(guesses: list[int]) -> Researcher:
@@ -28,4 +30,10 @@ def aggregate_list_researcher(researcher: Researcher) -> Researcher:
         researcher_output = researcher(h_tag)
         return list(zip(guesses, outputs)), researcher_output
     return my_researcher
-    
+
+def plot_researcher(domain: list[int]) -> Researcher:
+    def researcher(h: Callable[[int], int]) -> None:
+        outputs = [h(x) for x in domain]
+        plt.plot(domain, outputs, '.')
+        plt.show()
+    return researcher

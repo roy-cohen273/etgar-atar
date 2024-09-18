@@ -6,7 +6,7 @@ import subprocess
 import json
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
-from researcher import Researcher, aggregate_list_researcher, input_researcher, list_researcher
+from researcher import Researcher, aggregate_list_researcher, input_researcher, list_researcher, plot_researcher
 from stage0 import stage0
 from stage1 import stage1
 from stage2 import stage2
@@ -16,12 +16,13 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage0),
     SolvedInverse(stage1),
     SolvedInverse(stage2),
-    SolvedInverse(stage3)
+    SolvedInverse(stage3),
 ]
 
 DATA_FILE = "data.json"
 DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
 # DEFAULT_RESEARCHER = list_researcher([1, 2, 3, 4, 5])
+# DEFAULT_RESEARCHER = plot_researcher(list(range(100)))
 
 def run(guess: int) -> tuple[int, int, int]:
     proc = subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -69,7 +70,7 @@ def research(researcher: Researcher):
     def h(guess: int) -> int:
         stage, guess2, output = run(guess)
         if guess != guess2:
-            print("WTF!?", file=sys.stderr)
+            print(f"given guess: {guess}, answered guess: {guess2}", file=sys.stderr)
         with open(DATA_FILE, 'r') as f:
             data = json.load(f)
         if str(stage) not in data:

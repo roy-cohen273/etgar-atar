@@ -21,7 +21,7 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage4),
 ]
 
-DATA_FILE = "data.json"
+DATA_FILE = "data2.json"
 DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
 # DEFAULT_RESEARCHER = list_researcher([1, 2, 3, 4, 5])
 # DEFAULT_RESEARCHER = plot_researcher(list(range(100)))

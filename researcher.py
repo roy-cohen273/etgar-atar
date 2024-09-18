@@ -1,4 +1,5 @@
 from typing import TypeAlias, Callable, Any
+from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 
@@ -6,7 +7,7 @@ Researcher: TypeAlias = Callable[[Callable[[int], int]], Any]
 
 def list_researcher(guesses: list[int]) -> Researcher:
     def researcher(h: Callable[[int], int]) -> list[tuple[int, int]]:
-        return list(zip(guesses, map(h, guesses)))
+        return list(zip(guesses, map(h, tqdm(guesses))))
     return researcher
 
 def input_researcher(h: Callable[[int], int]) -> None:

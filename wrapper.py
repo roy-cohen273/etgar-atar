@@ -90,7 +90,7 @@ def main():
             data[str(stage)] = {}
         data[str(stage)][str(guess)] = output
         with open(DATA_FILE, 'w') as f:
-            json.dump(data, f)
+            json.dump(data, f, indent=4)
     
     print(f"ERROR: {error}")
     print(list(zip(guesses, outputs)))

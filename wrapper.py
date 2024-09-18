@@ -25,23 +25,21 @@ solved_levels: list[SolvedLevel] = [
 SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 5038
 DATA_FILE = "data.json"
-# DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
-DEFAULT_RESEARCHER = list_researcher(range(1_000_000))
+DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
+# DEFAULT_RESEARCHER = list_researcher(range(1_000_000))
 # DEFAULT_RESEARCHER = plot_researcher(list(range(100)))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 
 def run(guess: int) -> tuple[int, int, int]:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect((SERVER_HOST, SERVER_PORT))
-
-        stdin = open(sock.fileno(), 'w')
-        stdout = open(sock.fileno(), 'r')
+    with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+        stdin = proc.stdin
+        stdout = proc.stdout
 
         def get_line() -> str:
-            return stdout.readline().strip('\r\n')
+            return stdout.readline().decode().strip('\r\n')
         
         def send_guess(guess: int) -> None:
-            stdin.write(str(guess) + '\n')
+            stdin.write(str(guess).encode() + b'\n')
             stdin.flush()
 
         while True:

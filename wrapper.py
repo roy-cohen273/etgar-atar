@@ -7,7 +7,10 @@ import json
 import socket
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
-from researcher import Researcher, aggregate_list_researcher, input_researcher, list_researcher, plot_researcher, eval_researcher
+from researcher import (
+    Researcher, aggregate_list_researcher, input_researcher, list_researcher,
+    plot_researcher, eval_researcher, ipython_researcher
+)
 from stage0 import stage0
 from stage1 import stage1
 from stage2 import stage2
@@ -25,10 +28,11 @@ solved_levels: list[SolvedLevel] = [
 SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 5038
 DATA_FILE = "data.json"
-DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
+# DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
 # DEFAULT_RESEARCHER = list_researcher(range(1_000_000))
 # DEFAULT_RESEARCHER = plot_researcher(list(range(100)))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
+DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 
 def run(guess: int) -> tuple[int, int, int]:
     with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:

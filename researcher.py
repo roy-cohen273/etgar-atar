@@ -2,6 +2,7 @@ from typing import TypeAlias, Callable, Any
 from tqdm import tqdm
 
 import matplotlib.pyplot as plt
+import IPython
 
 Researcher: TypeAlias = Callable[[Callable[[int], int]], Any]
 
@@ -26,6 +27,9 @@ def eval_researcher(h: Callable[[int], int]) -> None:
         if expr == "":
             break
         print(eval(expr, {'h': h}))
+
+def ipython_researcher(h: Callable[[int], int]) -> None:
+    IPython.start_ipython(user_ns={'h': h})
 
 def aggregate_list_researcher(researcher: Researcher) -> Researcher:
     guesses = []

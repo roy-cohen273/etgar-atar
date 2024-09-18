@@ -18,6 +18,14 @@ def input_researcher(h: Callable[[int], int]) -> None:
         output = h(guess)
         print(f"h({guess}) = {output}")
 
+# SECURITY WARNING: using eval_researcher gives you NRCE (non-remote code execution)
+def eval_researcher(h: Callable[[int], int]) -> None:
+    while True:
+        expr = input("> ")
+        if expr == "":
+            break
+        print(eval(expr, {'h': h}))
+
 def aggregate_list_researcher(researcher: Researcher) -> Researcher:
     guesses = []
     outputs = []

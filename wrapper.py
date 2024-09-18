@@ -11,12 +11,14 @@ from stage0 import stage0
 from stage1 import stage1
 from stage2 import stage2
 from stage3 import stage3
+from stage4 import stage4
 
 solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage0),
     SolvedInverse(stage1),
     SolvedInverse(stage2),
     SolvedInverse(stage3),
+    SolvedInverse(stage4),
 ]
 
 DATA_FILE = "data.json"

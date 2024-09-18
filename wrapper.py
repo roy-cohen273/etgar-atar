@@ -21,11 +21,16 @@ solved_levels: list[SolvedLevel] = [
 DATA_FILE = "data.json"
 DEFAULT_GUESSER = list_guesser(pow(2, i) for i in range(64))
 
+<<<<<<< HEAD
 
 def run(guesser: Callable[[int, int], int]):
     proc = subprocess.Popen(
         ["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE
     )
+=======
+def run(guesser: Callable[[int, int], int]) -> tuple[int, int]:
+    proc = subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+>>>>>>> 8d948b858eddc3a8a8581dc5df17f79223179c11
     stdin = proc.stdin
     stdout = proc.stdout
 
@@ -58,6 +63,7 @@ def run(guesser: Callable[[int, int], int]):
                 print("success!")
             elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
                 line = stdout.readline().strip().decode()
+<<<<<<< HEAD
                 m = re.match(r"^-> h\((\d+)\) = (\d+)$", line)
                 if m:
                     guess = int(m.group(1))
@@ -69,15 +75,43 @@ def run(guesser: Callable[[int, int], int]):
                     data[str(stage)][str(guess)] = output
                     with open(DATA_FILE, "w") as f:
                         json.dump(data, f)
+=======
+>>>>>>> 8d948b858eddc3a8a8581dc5df17f79223179c11
                 print(line)
-                break
+                m = re.match(r"^-> h\((\d+)\) = (\d+)$", line)
+                if not m:
+                    print(f"hint line does not match regex: {line}")
+                return stage, int(m.group(1)), int(m.group(2))
             else:
                 print(f"unknown line encountered: {line}")
 
 
 def main():
+    stages = []
+    guesses = []
+    outputs = []
+    error = None
     while True:
-        run(DEFAULT_GUESSER)
+        try:
+            stage, guess, output = run(DEFAULT_GUESSER)
+        except Exception as e:
+            error = e
+            break
+
+        stages.append(stage)
+        guesses.append(guess)
+        outputs.append(output)
+
+        with open(DATA_FILE, 'r') as f:
+            data = json.load(f)
+        if str(stage) not in data:
+            data[str(stage)] = {}
+        data[str(stage)][str(guess)] = output
+        with open(DATA_FILE, 'w') as f:
+            json.dump(data, f)
+    
+    print(f"ERROR: {error}")
+    print(list(zip(guesses, outputs)))
 
 
 if __name__ == "__main__":

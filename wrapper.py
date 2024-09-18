@@ -17,21 +17,21 @@ solved_levels: list[SolvedLevel] = [
 ]
 
 DATA_FILE = "data.json"
-DEFAULT_GUESSER = list_guesser(pow(2, i) for i in range(64))
+DEFAULT_GUESSER = input_guesser
 
-def run(guesser: Callable[[int, int], int]) -> tuple[int, int]:
+def run(guesser: Callable[[int, str], int]) -> tuple[int, int, str]:
     proc = subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     stdin = proc.stdin
     stdout = proc.stdout
 
     while True:
         line = stdout.readline().strip().decode()
-        m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = (\d+)$", line)
+        m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = (\d+)|(\w*)$", line)
         if not m:
             print(f"line does not match regex: {line}", file=sys.stderr)
         
         stage = int(m.group(1))
-        wanted_output = int(m.group(2))
+        wanted_output = int(m.group(2)) if m.group(2) else m.group(3)
 
         if 0 <= stage < len(solved_levels):
             solution = solved_levels[stage].solve(wanted_output)
@@ -52,10 +52,10 @@ def run(guesser: Callable[[int, int], int]) -> tuple[int, int]:
             elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
                 line = stdout.readline().strip().decode()
                 print(line)
-                m = re.match(r"^-> h\((\d+)\) = (\d+)$", line)
+                m = re.match(r"^-> h\((\d+)\) = (\d+)|(\w*)$", line)
                 if not m:
                     print(f"hint line does not match regex: {line}")
-                return stage, int(m.group(1)), int(m.group(2))
+                return stage, int(m.group(1)), int(m.group(2)) if m.group(2) else m.group(3)
             else:
                 print(f"unknown line encountered: {line}")
 

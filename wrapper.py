@@ -4,6 +4,7 @@ import sys
 import re
 import subprocess
 import json
+import socket
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
 from researcher import Researcher, aggregate_list_researcher, input_researcher, list_researcher, plot_researcher, eval_researcher
@@ -21,53 +22,57 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage4),
 ]
 
+SERVER_HOST = '127.0.0.1'
+SERVER_PORT = 5038
 DATA_FILE = "data.json"
-DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
-# DEFAULT_RESEARCHER = list_researcher([1, 2, 3, 4, 5])
+# DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
+DEFAULT_RESEARCHER = list_researcher(range(1_000_000))
 # DEFAULT_RESEARCHER = plot_researcher(list(range(100)))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 
 def run(guess: int) -> tuple[int, int, int]:
-    proc = subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    stdin = proc.stdin
-    stdout = proc.stdout
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((SERVER_HOST, SERVER_PORT))
 
-    while True:
-        line = stdout.readline().strip(b'\n').decode()
-        m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = ((\d+)|(\w*))$", line)
-        if not m:
-            print(f"line does not match regex: {line}", file=sys.stderr)
+        stdin = open(sock.fileno(), 'w')
+        stdout = open(sock.fileno(), 'r')
+            
+        while True:
+            line = stdout.readline().strip('\n')
+            m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = ((\d+)|(\w*))$", line)
+            if not m:
+                print(f"line does not match regex: {line}", file=sys.stderr)
 
-        stage = int(m.group(1))
-        wanted_output = int(m.group(3)) if m.group(3) else m.group(4)
+            stage = int(m.group(1))
+            wanted_output = int(m.group(3)) if m.group(3) else m.group(4)
 
-        if 0 <= stage < len(solved_levels):
-            solution = solved_levels[stage].solve(wanted_output)
-            # print(str(solution).encode(), file=stdin)
-            stdin.write((str(solution) + "\n").encode())
-            stdin.flush()
-            line = stdout.readline().strip(b'\n').decode()
-            if line != f">>> stage{stage} Concurred!":
-                line = stdout.readline().strip(b'\n')
-                print(
-                    f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {line}"
-                )
-        else:
-            # print(f"stage {stage}. prompt: h(?) = {wanted_output}")
-            stdin.write((str(guess) + "\n").encode())
-            stdin.flush()
-            line = stdout.readline().strip(b'\n').decode()
-            if line == f">>> stage{stage} Concurred!":
-                print("success!")
-            elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
-                line = stdout.readline().strip(b'\n').decode()
-                # print(line)
-                m = re.match(r"^-> h\((\d+)\) = ((\d+)|(\w*))$", line)
-                if not m:
-                    print(f"hint line does not match regex: {line}")
-                return stage, int(m.group(1)), int(m.group(3)) if m.group(3) else m.group(4)
+            if 0 <= stage < len(solved_levels):
+                solution = solved_levels[stage].solve(wanted_output)
+                # print(str(solution), file=stdin)
+                stdin.write((str(solution) + "\n"))
+                stdin.flush()
+                line = stdout.readline().strip('\n')
+                if line != f">>> stage{stage} Concurred!":
+                    line = stdout.readline().strip('\n')
+                    print(
+                        f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {line}"
+                    )
             else:
-                print(f"unknown line encountered: {line}")
+                # print(f"stage {stage}. prompt: h(?) = {wanted_output}")
+                stdin.write((str(guess) + "\n"))
+                stdin.flush()
+                line = stdout.readline().strip('\n')
+                if line == f">>> stage{stage} Concurred!":
+                    print("success!")
+                elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
+                    line = stdout.readline().strip('\n')
+                    # print(line)
+                    m = re.match(r"^-> h\((\d+)\) = ((\d+)|(\w*))$", line)
+                    if not m:
+                        print(f"hint line does not match regex: {line}")
+                    return stage, int(m.group(1)), int(m.group(3)) if m.group(3) else m.group(4)
+                else:
+                    print(f"unknown line encountered: {line}")
 
 def research(researcher: Researcher):
     def h(guess: int) -> int:
@@ -86,7 +91,9 @@ def research(researcher: Researcher):
     return researcher(h)
 
 def main():
+    # proc = subprocess.Popen(["./etgar.py", "serv"])
     print(research(DEFAULT_RESEARCHER))
+    # proc.kill()
 
 
 if __name__ == "__main__":

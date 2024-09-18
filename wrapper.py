@@ -16,6 +16,7 @@ from stage1 import stage1
 from stage2 import stage2
 from stage3 import stage3
 from stage4 import stage4
+from stage5 import stage5
 
 solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage0),
@@ -23,6 +24,7 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage2),
     SolvedInverse(stage3),
     SolvedInverse(stage4),
+    SolvedInverse(stage5),
 ]
 
 SERVER_HOST = '127.0.0.1'

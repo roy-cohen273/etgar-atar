@@ -36,15 +36,12 @@ DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 
 def run(guess: int) -> tuple[int, int, int]:
     with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
-        stdin = proc.stdin
-        stdout = proc.stdout
-
         def get_line() -> str:
-            return stdout.readline().decode().strip('\r\n')
+            return proc.stdout.readline().decode().strip('\r\n')
         
         def send_guess(guess: int) -> None:
-            stdin.write(str(guess).encode() + b'\n')
-            stdin.flush()
+            proc.stdin.write(str(guess).encode() + b'\n')
+            proc.stdin.flush()
 
         while True:
             line = get_line()
@@ -57,7 +54,6 @@ def run(guess: int) -> tuple[int, int, int]:
 
             if 0 <= stage < len(solved_levels):
                 solution = solved_levels[stage].solve(wanted_output)
-                # print(str(solution), file=stdin)
                 send_guess(solution)
                 line = get_line()
                 if line != f">>> stage{stage} Concurred!":

@@ -38,48 +38,61 @@ DATA_FILE = "data.json"
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 
+def parse_output(output: str):
+    try:
+        return int(output)
+    except ValueError:
+        pass
+    try:
+        return float(output)
+    except ValueError:
+        pass
+    return output
+
 def run(guess: int) -> tuple[int, int, int]:
-    with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
-        def get_line() -> str:
-            return proc.stdout.readline().decode().strip('\r\n')
-        
-        def send_guess(guess: int) -> None:
-            proc.stdin.write(str(guess).encode() + b'\n')
-            proc.stdin.flush()
+    while True:
+        with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+            def get_line() -> str:
+                return proc.stdout.readline().decode().strip('\r\n')
+            
+            def send_guess(guess: int) -> None:
+                proc.stdin.write(str(guess).encode() + b'\n')
+                proc.stdin.flush()
 
-        while True:
-            line = get_line()
-            m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = ((\d+)|(.*))$", line)
-            if not m:
-                print(f"line does not match regex: {line}", file=sys.stderr)
-
-            stage = int(m.group(1))
-            wanted_output = int(m.group(3)) if m.group(3) else m.group(4)
-
-            if 0 <= stage < len(solved_levels):
-                solution = solved_levels[stage].solve(wanted_output)
-                send_guess(solution)
+            while True:
                 line = get_line()
-                if line != f">>> stage{stage} Concurred!":
+                m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = (.*)$", line)
+                if not m:
+                    print(f"line does not match regex: {line}", file=sys.stderr)
+
+                stage = int(m.group(1))
+                wanted_output = parse_output(m.group(2))
+
+                if 0 <= stage < len(solved_levels):
+                    solution = solved_levels[stage].solve(wanted_output)
+                    send_guess(solution)
                     line = get_line()
-                    print(
-                        f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {line}"
-                    )
-            else:
-                # print(f"stage {stage}. prompt: h(?) = {wanted_output}")
-                send_guess(guess)
-                line = get_line()
-                if line == f">>> stage{stage} Concurred!":
-                    print("success!")
-                elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
-                    line = get_line()
-                    # print(line)
-                    m = re.match(r"^-> h\((\d+)\) = ((\d+)|(.*))$", line)
-                    if not m:
-                        print(f"hint line does not match regex: {line}")
-                    return stage, int(m.group(1)), int(m.group(3)) if m.group(3) else m.group(4)
+                    if line != f">>> stage{stage} Concurred!":
+                        line = get_line()
+                        print(
+                            f"solution for stage {stage} failed!\nstage{stage}: h(?) = {wanted_output}\nhint: {line}"
+                        )
+                        break
                 else:
-                    print(f"unknown line encountered: {line}")
+                    # print(f"stage {stage}. prompt: h(?) = {wanted_output}")
+                    send_guess(guess)
+                    line = get_line()
+                    if line == f">>> stage{stage} Concurred!":
+                        print("success!")
+                    elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
+                        line = get_line()
+                        # print(line)
+                        m = re.match(r"^-> h\((\d+)\) = (.*)$", line)
+                        if not m:
+                            print(f"hint line does not match regex: {line}")
+                        return stage, int(m.group(1)), parse_output(m.group(2))
+                    else:
+                        print(f"unknown line encountered: {line}")
 
 def research(researcher: Researcher):
     def h(guess: int) -> int:

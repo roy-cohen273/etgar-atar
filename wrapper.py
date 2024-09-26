@@ -20,6 +20,7 @@ from stage4 import stage4
 from stage5 import stage5
 from stage6 import stage6
 from stage7 import stage7
+from stage8 import stage8
 
 solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage0),
@@ -30,12 +31,13 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage5),
     SolvedInverse(stage6),
     SolvedInverse(stage7),
+    SolvedInverse(stage8),
 ]
 
 DATA_FILE = "data.json"
 # DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
 # DEFAULT_RESEARCHER = list_researcher([2** i for i in range(64)])
-# DEFAULT_RESEARCHER = plot_researcher(list(range(20))
+# DEFAULT_RESEARCHER = plot_researcher(range(700))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 

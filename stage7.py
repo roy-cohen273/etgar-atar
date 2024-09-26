@@ -15,11 +15,11 @@ def stage7_checker(guess, target):
 
 def stage7_old(x):
     initial_guess = int((x * 24)**0.25)
-    guesses = [initial_guess + i for i in range (1000)] + [initial_guess - i for i in range(1000)]
+    guesses = [initial_guess - i for i in range(1500)] + [initial_guess + i for i in range (1500)]
     for guess in guesses:
         if stage7_checker(guess, x):
             return guess 
-    return initial_guess
+    return 7
 
 def stage7_binary_search(start, end, target):
     # should be better but does not work currently
@@ -36,6 +36,7 @@ def stage7_binary_search(start, end, target):
     return stage7_binary_search(start, middle, target)
     
 def stage7(x):
+    int((x * 24)**0.25)
     initial_guess  = int((x * 24)**0.25)
     stage7_binary_search(initial_guess - 2000, initial_guess + 2000, x)
 

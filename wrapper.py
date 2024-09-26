@@ -17,6 +17,8 @@ from stage2 import stage2
 from stage3 import stage3
 from stage4 import stage4
 from stage5 import stage5
+from stage6 import stage6
+from stage7 import stage7
 
 solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage0),
@@ -25,14 +27,16 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage3),
     SolvedInverse(stage4),
     SolvedInverse(stage5),
+    SolvedInverse(stage6),
+    SolvedInverse(stage7),
 ]
 
 DATA_FILE = "data.json"
-DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
-# DEFAULT_RESEARCHER = list_researcher([1, 2, 3, 4, 5])
-# DEFAULT_RESEARCHER = plot_researcher(list(range(100)))
+# DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
+DEFAULT_RESEARCHER = list_researcher([2** i for i in range(64)])
+# DEFAULT_RESEARCHER = plot_researcher(list(range(20))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
-DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
+# DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 
 def run(guess: int) -> tuple[int, int, int]:
     with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:

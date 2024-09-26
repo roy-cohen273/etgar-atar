@@ -18,7 +18,7 @@ from stage3 import stage3
 from stage4 import stage4
 from stage5 import stage5
 from stage6 import stage6
-from stage7 import stage7
+from stage7 import stage7_old
 
 solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage0),
@@ -28,7 +28,7 @@ solved_levels: list[SolvedLevel] = [
     SolvedInverse(stage4),
     SolvedInverse(stage5),
     SolvedInverse(stage6),
-    SolvedInverse(stage7),
+    SolvedInverse(stage7_old),
 ]
 
 DATA_FILE = "data.json"

@@ -11,6 +11,7 @@ from researcher import (
     Researcher, aggregate_list_researcher, input_researcher, list_researcher,
     plot_researcher, eval_researcher, ipython_researcher
 )
+from caching import JsonCache, PickleCache
 from stage0 import stage0
 from stage1 import stage1
 from stage2 import stage2
@@ -37,6 +38,8 @@ DATA_FILE = "data.json"
 # DEFAULT_RESEARCHER = plot_researcher(list(range(20))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
+
+DEFAULT_CACHE = JsonCache
 
 def parse_output(output: str):
     try:
@@ -95,20 +98,32 @@ def run(guess: int) -> tuple[int, int, int]:
                         print(f"unknown line encountered: {line}")
 
 def research(researcher: Researcher):
-    def h(guess: int) -> int:
-        stage, guess2, output = run(guess)
-        if guess != guess2:
-            print(f"given guess: {guess}, answered guess: {guess2}", file=sys.stderr)
-        with open(DATA_FILE, 'r') as f:
-            data = json.load(f)
-        if str(stage) not in data:
-            data[str(stage)] = {}
-        data[str(stage)][str(guess)] = output
-        with open(DATA_FILE, 'w') as f:
-            json.dump(data, f, indent=4)
-        return output
+    with DEFAULT_CACHE(len(solved_levels)) as cache:
+        def h(guess: int) -> int:
+            cached = cache.search(guess)
+            if cached is not None:
+                return cached
 
-    return researcher(h)
+            stage, guess2, output = run(guess)
+            if guess != guess2:
+                print(f"given guess: {guess}, answered guess: {guess2}", file=sys.stderr)
+            if stage != len(solved_levels):
+                print("tage does not match solved_levels list")
+                return 0
+
+            cache.update(guess, output)
+
+            # with open(DATA_FILE, 'r') as f:
+            #     data = json.load(f)
+            # if str(stage) not in data:
+            #     data[str(stage)] = {}
+            # data[str(stage)][str(guess)] = output
+            # with open(DATA_FILE, 'w') as f:
+            #     json.dump(data, f, indent=4)
+
+            return output
+
+        return researcher(h)
 
 def main():
     # proc = subprocess.Popen(["./etgar.py", "serv"])

@@ -33,10 +33,10 @@ solved_levels: list[SolvedLevel] = [
 
 DATA_FILE = "data.json"
 # DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
-DEFAULT_RESEARCHER = list_researcher([2** i for i in range(64)])
+# DEFAULT_RESEARCHER = list_researcher([2** i for i in range(64)])
 # DEFAULT_RESEARCHER = plot_researcher(list(range(20))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
-# DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
+DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 
 def run(guess: int) -> tuple[int, int, int]:
     with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
@@ -49,7 +49,7 @@ def run(guess: int) -> tuple[int, int, int]:
 
         while True:
             line = get_line()
-            m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = ((\d+)|(\w*))$", line)
+            m: re.Match | None = re.match(r"^stage(\d+): h\(\?\) = ((\d+)|(.*))$", line)
             if not m:
                 print(f"line does not match regex: {line}", file=sys.stderr)
 
@@ -74,7 +74,7 @@ def run(guess: int) -> tuple[int, int, int]:
                 elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
                     line = get_line()
                     # print(line)
-                    m = re.match(r"^-> h\((\d+)\) = ((\d+)|(\w*))$", line)
+                    m = re.match(r"^-> h\((\d+)\) = ((\d+)|(.*))$", line)
                     if not m:
                         print(f"hint line does not match regex: {line}")
                     return stage, int(m.group(1)), int(m.group(3)) if m.group(3) else m.group(4)

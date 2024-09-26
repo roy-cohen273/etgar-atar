@@ -11,7 +11,7 @@ from researcher import (
     Researcher, aggregate_list_researcher, input_researcher, list_researcher,
     plot_researcher, eval_researcher, ipython_researcher
 )
-from caching import JsonCache, PickleCache, SeekCache
+from caching import JsonCache, PickleCache
 from stage0 import stage0
 from stage1 import stage1
 from stage2 import stage2
@@ -35,7 +35,7 @@ DEFAULT_RESEARCHER = list_researcher(range((1 << 63) - 1))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 
-DEFAULT_CACHE = SeekCache
+DEFAULT_CACHE = JsonCache
 
 def run(guess: int) -> tuple[int, int, int]:
     with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:

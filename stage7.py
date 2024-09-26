@@ -15,7 +15,7 @@ def stage7_checker(guess, target):
 
 def stage7(x):
     initial_guess = int((x * 24)**0.25)
-    guesses = [initial_guess + i for i in range (1000)] + [initial_guess - i for i in range(-1000)]
+    guesses = [initial_guess + i for i in range (1000)] + [initial_guess - i for i in range(1000)]
     for guess in guesses:
         if stage7_checker(guess, x):
             return guess 

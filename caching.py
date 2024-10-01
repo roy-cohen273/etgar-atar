@@ -30,6 +30,12 @@ class Cache(ABC):
     def update(self, guess: int, output: int) -> None: ...
 
 class NoCache(Cache, filename_format=""):
+    def __enter__(self):
+        return super().__enter__()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return super().__exit__(exc_type, exc_value, traceback)
+
     def search(self, guess: int) -> int | None:
         return None
     

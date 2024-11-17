@@ -11,7 +11,7 @@ from researcher import (
     Researcher, aggregate_list_researcher, input_researcher, list_researcher,
     plot_researcher, eval_researcher, ipython_researcher
 )
-from caching import JsonCache, PickleCache
+from caching import NoCache, JsonCache, PickleCache
 from stage0 import stage0
 from stage1 import stage1
 from stage2 import stage2
@@ -37,11 +37,12 @@ solved_levels: list[SolvedLevel] = [
 DATA_FILE = "data.json"
 # DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
 # DEFAULT_RESEARCHER = list_researcher([2** i for i in range(64)])
-# DEFAULT_RESEARCHER = plot_researcher(range(700))
+# DEFAULT_RESEARCHER = plot_researcher(range(0, 1 << 64, 1 << 61))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
 DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
+DEFAULT_RESEARCHER = ipython_researcher
 
-DEFAULT_CACHE = JsonCache
+DEFAULT_CACHE = NoCache
 
 def parse_output(output: str):
     try:
@@ -56,13 +57,18 @@ def parse_output(output: str):
 
 def run(guess: int) -> tuple[int, int, int]:
     while True:
-        with subprocess.Popen(["./etgar.py"], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(('server.do.daarazimfree.com', 4444))
+
+            stdin = open(sock.fileno(), 'wb', closefd=False)
+            stdout = open(sock.fileno(), 'rb', closefd=False)
+
             def get_line() -> str:
-                return proc.stdout.readline().decode().strip('\r\n')
+                return stdout.readline().decode().strip('\r\n')
             
             def send_guess(guess: int) -> None:
-                proc.stdin.write(str(guess).encode() + b'\n')
-                proc.stdin.flush()
+                stdin.write(str(guess).encode() + b'\n')
+                stdin.flush()
 
             while True:
                 line = get_line()
@@ -115,22 +121,12 @@ def research(researcher: Researcher):
 
             cache.update(guess, output)
 
-            # with open(DATA_FILE, 'r') as f:
-            #     data = json.load(f)
-            # if str(stage) not in data:
-            #     data[str(stage)] = {}
-            # data[str(stage)][str(guess)] = output
-            # with open(DATA_FILE, 'w') as f:
-            #     json.dump(data, f, indent=4)
-
             return output
 
         return researcher(h)
 
 def main():
-    # proc = subprocess.Popen(["./etgar.py", "serv"])
     print(research(DEFAULT_RESEARCHER))
-    # proc.kill()
 
 
 if __name__ == "__main__":

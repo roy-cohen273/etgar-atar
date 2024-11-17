@@ -2,9 +2,9 @@
 
 import sys
 import re
-import subprocess
-import json
 import socket
+import decimal
+from decimal import Decimal
 
 from solved_level import SolvedFunction, SolvedInverse, SolvedLevel
 from researcher import (
@@ -37,9 +37,9 @@ solved_levels: list[SolvedLevel] = [
 DATA_FILE = "data.json"
 # DEFAULT_RESEARCHER = aggregate_list_researcher(input_researcher)
 # DEFAULT_RESEARCHER = list_researcher([2** i for i in range(64)])
-# DEFAULT_RESEARCHER = plot_researcher(range(0, 1 << 64, 1 << 61))
+# DEFAULT_RESEARCHER = plot_researcher(range(6*1<<61, (6*1<<61)+20))
 # DEFAULT_RESEARCHER = aggregate_list_researcher(eval_researcher)
-DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
+# DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 DEFAULT_RESEARCHER = ipython_researcher
 
 DEFAULT_CACHE = NoCache
@@ -50,8 +50,8 @@ def parse_output(output: str):
     except ValueError:
         pass
     try:
-        return float(output)
-    except ValueError:
+        return Decimal(output)
+    except decimal.InvalidOperation:
         pass
     return output
 
@@ -116,7 +116,7 @@ def research(researcher: Researcher):
             if guess != guess2:
                 print(f"given guess: {guess}, answered guess: {guess2}", file=sys.stderr)
             if stage != len(solved_levels):
-                print("tage does not match solved_levels list")
+                print("stage does not match solved_levels list")
                 return 0
 
             cache.update(guess, output)

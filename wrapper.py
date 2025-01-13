@@ -42,7 +42,7 @@ DATA_FILE = "data.json"
 # DEFAULT_RESEARCHER = aggregate_list_researcher(ipython_researcher)
 DEFAULT_RESEARCHER = ipython_researcher
 
-DEFAULT_CACHE = NoCache
+DEFAULT_CACHE = JsonCache
 
 def parse_output(output: str):
     try:
@@ -55,10 +55,11 @@ def parse_output(output: str):
         pass
     return output
 
-def run(guess: int) -> tuple[int, int, int]:
+def run(guess: int) -> tuple[int, int, int, int]:
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(('server.do.daarazimfree.com', 4444))
+            # sock.connect(('server.do.daarazimfree.com', 4444))
+            sock.connect(('localhost', 5038))
 
             stdin = open(sock.fileno(), 'wb', closefd=False)
             stdout = open(sock.fileno(), 'rb', closefd=False)
@@ -95,24 +96,26 @@ def run(guess: int) -> tuple[int, int, int]:
                     line = get_line()
                     if line == f">>> stage{stage} Concurred!":
                         print("success!")
+                        return stage, guess, wanted_output, wanted_output
                     elif line == ">>> Wrong answer, but I will be nice and give you a hint :)":
                         line = get_line()
                         # print(line)
                         m = re.match(r"^-> h\((\d+)\) = (.*)$", line)
                         if not m:
                             print(f"hint line does not match regex: {line}")
-                        return stage, int(m.group(1)), parse_output(m.group(2))
+                        return stage, int(m.group(1)), wanted_output, parse_output(m.group(2))
                     else:
                         print(f"unknown line encountered: {line}")
 
 def research(researcher: Researcher):
-    with DEFAULT_CACHE(len(solved_levels)) as cache:
+    # for stupid reasons, the wanted cache for level number n is the cache for level number 10*n
+    with DEFAULT_CACHE(len(solved_levels)) as cache, DEFAULT_CACHE(10 * len(solved_levels)) as wanted_cache:
         def h(guess: int) -> int:
             cached = cache.search(guess)
             if cached is not None:
                 return cached
 
-            stage, guess2, output = run(guess)
+            stage, guess2, wanted_output, output = run(guess)
             if guess != guess2:
                 print(f"given guess: {guess}, answered guess: {guess2}", file=sys.stderr)
             if stage != len(solved_levels):
@@ -123,7 +126,24 @@ def research(researcher: Researcher):
 
             return output
 
-        return researcher(h)
+        def w(guess: int) -> int:
+            cached  = wanted_cache.search(guess)
+            if cached is not None:
+                return cached
+
+            stage, guess2, wanted_output, output = run(guess)
+            stage, guess2, wanted_output, output = run(guess)
+            if guess != guess2:
+                print(f"given guess: {guess}, answered guess: {guess2}", file=sys.stderr)
+            if stage != len(solved_levels):
+                print("stage does not match solved_levels list")
+                return 0
+
+            wanted_cache.update(guess, wanted_output)
+
+            return wanted_output
+
+        return researcher(h, w)
 
 def main():
     print(research(DEFAULT_RESEARCHER))

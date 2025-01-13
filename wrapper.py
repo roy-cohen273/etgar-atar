@@ -108,8 +108,7 @@ def run(guess: int) -> tuple[int, int, int, int]:
                         print(f"unknown line encountered: {line}")
 
 def research(researcher: Researcher):
-    # for stupid reasons, the wanted cache for level number n is the cache for level number 10*n
-    with DEFAULT_CACHE(len(solved_levels)) as cache, DEFAULT_CACHE(10 * len(solved_levels)) as wanted_cache:
+    with DEFAULT_CACHE(len(solved_levels)) as cache, DEFAULT_CACHE(f"{len(solved_levels)}_wanted") as wanted_cache:
         def h(guess: int) -> int:
             cached = cache.search(guess)
             if cached is not None:
